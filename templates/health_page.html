@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Health & Therapy Spots - Life Sync</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; line-height: 1.6; }
+        header { background-color: #3a506b; color: #fff; padding: 20px; text-align: center; }
+        nav { display: flex; justify-content: center; background-color: #6c91c2; }
+        nav a { color: #fff; padding: 14px 20px; text-decoration: none; }
+        nav a:hover { background-color: #5a7fa9; }
+        .container { padding: 20px; max-width: 900px; margin: auto; }
+        footer { background-color: #333; color: #fff; text-align: center; padding: 15px; margin-top: 30px; }
+        .feature-section { background-color: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2, h3 { color: #3a506b; }
+        .attraction-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; background-color: #f9f9f9; }
+        .attraction-card h4 { margin-top: 0; }
+        .category-filter { margin-bottom: 20px; }
+        .category-filter label { margin-right: 10px; }
+        .category-filter select, .category-filter button { padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+        .category-filter button { background-color: #6c91c2; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header><h1>Local Health & Therapy Spots</h1></header>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('journal_page') }}">Journal</a>
+        <a href="{{ url_for('routine_page') }}">Routine Tracker</a>
+        <a href="{{ url_for('health_page') }}">Health & Therapy Spots</a>
+        <a href="{{ url_for('chatbot_page') }}">AI Chatbot</a>
+    </nav>
+    <div class="container">
+        <div class="feature-section">
+            <h2>Find Local Resources</h2>
+            <p>Discover places that can support your well-being. (Sample Data)</p>
+
+            <form method="GET" action="{{ url_for('health_page') }}" class="category-filter">
+                <label for="category_select">Filter by Category:</label>
+                <select name="category" id="category_select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Filter</button>
+            </form>
+
+            {% if attractions_list %}
+                {% for att in attractions_list %}
+                <div class="attraction-card">
+                    <h4>{{ att.name }}</h4>
+                    <p><strong>Category:</strong> {{ att.category }}</p>
+                    <p>{{ att.description }}</p>
+                    {% if att.address %}<p><strong>Address:</strong> {{ att.address }}</p>{% endif %}
+                    {% if att.phone %}<p><strong>Phone:</strong> {{ att.phone }}</p>{% endif %}
+                    <p><small>Location: (Lat: {{ att.latitude }}, Lon: {{ att.longitude }})</small></p>
+                     </div>
+                {% endfor %}
+            {% else %}
+                <p>No attractions found for the selected category or no attractions available.</p>
+            {% endif %}
+        </div>
+    </div>
+    <footer><p>&copy; <script>document.write(new Date().getFullYear())</script> Life Sync</p></footer>
+</body>
+</html>
