@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Sync - Mental Health App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4; /* Lighter background */
+            color: #333; /* Darker text for better readability */
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #3a506b; /* Calmer blue */
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #6c91c2; /* Lighter blue for nav */
+        }
+        nav a {
+            color: #fff;
+            padding: 14px 20px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        nav a:hover {
+            background-color: #5a7fa9; /* Darker on hover */
+        }
+        .container {
+            padding: 20px;
+            max-width: 1000px; /* Max width for content */
+            margin: auto; /* Center content */
+        }
+        .form-section { /* Unified style for login/signup/forgot */
+            max-width: 400px; /* Increased width slightly */
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 25px; /* Increased padding */
+            border-radius: 8px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Softer shadow */
+        }
+        h2 {
+            margin-top: 0; /* Remove top margin for h2 inside form-section */
+            margin-bottom: 25px;
+            color: #3a506b; /* Header color */
+            text-align: center;
+        }
+        input[type="text"], input[type="password"], input[type="email"], textarea, select {
+            width: calc(100% - 22px); /* Adjust for padding */
+            padding: 12px; /* Increased padding */
+            margin-bottom: 15px; /* Increased margin */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        button, .button-link {
+            width: 100%;
+            padding: 12px;
+            background-color: #6c91c2; /* Button color */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        button:hover, .button-link:hover {
+            background-color: #5a7fa9; /* Darker on hover */
+        }
+        .switch-link {
+            text-align: center;
+            margin-top: 15px; /* Increased margin */
+            color: #555;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .switch-link:hover {
+            color: #3a506b;
+        }
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            margin-top: 30px;
+        }
+        .alert {
+            padding: 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .feature-section {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        ul { list-style-type: none; padding-left: 0; }
+        li { background-color: #f9f9f9; border: 1px solid #eee; padding: 10px; margin-bottom: 5px; border-radius: 4px;}
+    </style>
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('.form-section').forEach(el => el.style.display = 'none');
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = 'block';
+            }
+        }
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // In a real app, this would be an AJAX call to the server
+            if (username === 'user' && password === 'pass') { // Simple mock login
+                alert('Login successful! Redirecting to dashboard...');
+                window.location.href = "{{ url_for('dashboard') }}"; // Use Flask's url_for
+            } else {
+                alert('Invalid username or password.');
+            }
+        }
+        function handleSignup(event) {
+            event.preventDefault();
+            // Add AJAX call for signup here
+            alert('Signup form submitted (mock)! Redirecting to dashboard...');
+            window.location.href = "{{ url_for('dashboard') }}"; // Use Flask's url_for
+        }
+        function handleForgotPassword(event) {
+            event.preventDefault();
+            // Add AJAX call for password recovery here
+            alert('Password recovery instructions would be sent (mock).');
+        }
+        // Show login section by default when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            showSection('login');
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Life Sync - Your Mental Health Companion</h1>
+    </header>
+    <nav>
+        <a href="{{ url_for('index') }}">Home/Login</a>
+        </nav>
+    <div class="container">
+        <div id="login" class="form-section login">
+            <h2>Login to Life Sync</h2>
+            <form onsubmit="handleLogin(event)">
+                <input type="text" id="username" name="username" placeholder="Username (use 'user')" required>
+                <input type="password" id="password" name="password" placeholder="Password (use 'pass')" required>
+                <button type="submit">Login</button>
+            </form>
+            <div class="switch-link" onclick="showSection('signup')">Create an account</div>
+            <div class="switch-link" onclick="showSection('forgot')">Forgot password?</div>
+        </div>
+
+        <div id="signup" class="form-section signup" style="display: none;">
+            <h2>Sign Up</h2>
+            <form onsubmit="handleSignup(event)">
+                <input type="text" name="new_username" placeholder="Username" required>
+                <input type="email" name="new_email" placeholder="Email" required>
+                <input type="password" name="new_password" placeholder="Password" required>
+                <button type="submit">Sign Up</button>
+            </form>
+            <div class="switch-link" onclick="showSection('login')">Already have an account? Login</div>
+        </div>
+
+        <div id="forgot" class="form-section forgot" style="display: none;">
+            <h2>Forgot Password</h2>
+            <form onsubmit="handleForgotPassword(event)">
+                <input type="email" name="recovery_email" placeholder="Enter your registered email" required>
+                <button type="submit">Reset Password</button>
+            </form>
+            <div class="switch-link" onclick="showSection('login')">Back to login</div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; <script>document.write(new Date().getFullYear())</script> Life Sync. All rights reserved.</p>
+    </footer>
+</body>
+</html>
