@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Daily Routine Tracker - Life Sync</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; line-height: 1.6; }
+        header { background-color: #3a506b; color: #fff; padding: 20px; text-align: center; }
+        nav { display: flex; justify-content: center; background-color: #6c91c2; }
+        nav a { color: #fff; padding: 14px 20px; text-decoration: none; }
+        nav a:hover { background-color: #5a7fa9; }
+        .container { padding: 20px; max-width: 900px; margin: auto; }
+        footer { background-color: #333; color: #fff; text-align: center; padding: 15px; margin-top: 30px; }
+        .feature-section { background-color: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2, h3 { color: #3a506b; }
+        input[type="text"], input[type="time"], input[type="date"], select { width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { padding: 10px 15px; background-color: #6c91c2; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+        button:hover { background-color: #5a7fa9; }
+        ul { list-style-type: none; padding: 0; }
+        li { background-color: #f9f9f9; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .completed-task { text-decoration: line-through; color: #777; }
+        .task-actions button { font-size: 0.9em; padding: 5px 10px; margin-left: 5px;}
+        .report-section { margin-top: 30px; }
+        .report-section pre { background-color: #eef; padding: 15px; border-radius: 5px; white-space: pre-wrap; }
+        .alert { padding: 10px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px; margin-bottom: 15px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .progress-bar-container { width: 100%; background-color: #e0e0e0; border-radius: 4px; margin-bottom: 10px; }
+        .progress-bar { height: 20px; background-color: #6c91c2; border-radius: 4px; text-align: center; color: white; line-height: 20px; }
+        .form-inline { display: flex; gap: 10px; align-items: flex-end; margin-bottom:15px; }
+        .form-inline input[type="text"] { flex-grow: 1; }
+        .form-inline input[type="time"] { width: auto; }
+    </style>
+</head>
+<body>
+    <header><h1>Daily Routine Tracker</h1></header>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('journal_page') }}">Journal</a>
+        <a href="{{ url_for('routine_page') }}">Routine Tracker</a>
+        <a href="{{ url_for('health_page') }}">Health & Therapy Spots</a>
+        <a href="{{ url_for('chatbot_page') }}">AI Chatbot</a>
+    </nav>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="feature-section">
+            <h2>Routine for: {{ selected_date_str }}</h2>
+            <form method="GET" action="{{ url_for('routine_page') }}">
+                <label for="date_selector">Select Date:</label>
+                <input type="date" id="date_selector" name="date" value="{{ selected_date_iso }}">
+                <button type="submit">View Routine</button>
+            </form>
+            <hr>
+            
+            <h3>Add New Routine Item</h3>
+            <form method="POST" action="{{ url_for('add_routine_item') }}">
+                <input type="hidden" name="routine_date" value="{{ selected_date_iso }}">
+                <div class="form-inline">
+                    <input type="text" name="task" placeholder="Task description" required>
+                    <input type="time" name="time" placeholder="Time (optional)">
+                    <button type="submit">Add Item</button>
+                </div>
+            </form>
+
+            <h3>Today's Items ({{ routine.items|length }})</h3>
+             {% if routine.items %}
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: {{ routine.get_completion_percentage() }}%;">
+                        {{ "%.0f"|format(routine.get_completion_percentage()) }}%
+                    </div>
+                </div>
+                <ul>
+                    {% for item in routine.items %}
+                    <li class="{{ 'completed-task' if item.completed else '' }}">
+                        <span>
+                            {{ item.task }}
+                            {% if item.time %} ({{ item.time }}) {% endif %}
+                        </span>
+                        <span class="task-actions">
+                            {% if not item.completed %}
+                            <form method="POST" action="{{ url_for('toggle_routine_item') }}" style="display: inline;">
+                                <input type="hidden" name="routine_date" value="{{ selected_date_iso }}">
+                                <input type="hidden" name="task_name" value="{{ item.task }}">
+                                <input type="hidden" name="status" value="complete">
+                                <button type="submit">Complete</button>
+                            </form>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('toggle_routine_item') }}" style="display: inline;">
+                                <input type="hidden" name="routine_date" value="{{ selected_date_iso }}">
+                                <input type="hidden" name="task_name" value="{{ item.task }}">
+                                <input type="hidden" name="status" value="incomplete">
+                                <button type="submit" style="background-color: #aaa;">Undo</button>
+                            </form>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('delete_routine_item') }}" style="display: inline;">
+                                <input type="hidden" name="routine_date" value="{{ selected_date_iso }}">
+                                <input type="hidden" name="task_name" value="{{ item.task }}">
+                                <button type="submit" style="background-color: #d9534f;">Delete</button>
+                            </form>
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No routine items for this day. Add some above!</p>
+            {% endif %}
+        </div>
+
+        <div class="feature-section report-section">
+            <h2>Monthly Report</h2>
+             <form method="GET" action="{{ url_for('routine_page') }}">
+                <label for="month_selector">Month:</label>
+                <select name="report_month">
+                    {% for i in range(1, 13) %}
+                    <option value="{{ i }}" {% if i == current_month %}selected{% endif %}>{{ month_names[i] }}</option>
+                    {% endfor %}
+                </select>
+                <label for="year_selector">Year:</label>
+                <input type="number" name="report_year" value="{{ current_year }}" min="2000" max="2050">
+                <button type="submit" name="view_report" value="true">View Report</button>
+            </form>
+
+            {% if monthly_report_data %}
+                <h3>Report for {{ monthly_report_data.month_year }}</h3>
+                <p><strong>Average Completion:</strong> {{ monthly_report_data.average_completion }}</p>
+                <p><strong>Days with 100% Completion:</strong> {{ monthly_report_data.fully_completed_days }} (out of {{ monthly_report_data.total_days_in_month }} days in month)</p>
+                
+                <h4>Analysis:</h4>
+                <ul>{% for point in monthly_report_data.analysis %}<li>{{ point }}</li>{% endfor %}</ul>
+                
+                <h4>Recommendations:</h4>
+                <ul>{% for point in monthly_report_data.recommendations %}<li>{{ point }}</li>{% endfor %}</ul>
+
+                <h4>Daily Details:</h4>
+                <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding:10px;">
+                {% for day_detail in monthly_report_data.daily_details %}
+                    <p><strong>{{ day_detail.date }}:</strong> {{ day_detail.completion }}
+                        {% if day_detail.items and day_detail.items[0] != "No routine recorded" %}
+                            <ul style="font-size: 0.9em;">
+                            {% for item_str in day_detail.items %}
+                                <li>{{ item_str }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% elif day_detail.items[0] == "No routine recorded" %}
+                             - No routine recorded
+                        {% endif %}
+                    </p>
+                {% endfor %}
+                </div>
+            {% elif request.args.get('view_report') %}
+                <p>No data to generate report for the selected month/year.</p>
+            {% else %}
+                 <p>Select a month and year above and click "View Report" to see the monthly summary.</p>
+            {% endif %}
+        </div>
+    </div>
+    <footer><p>&copy; <script>document.write(new Date().getFullYear())</script> Life Sync</p></footer>
+</body>
+</html>
