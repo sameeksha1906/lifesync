@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Life Sync</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* You can copy the styles from index.html or link to a shared style.css */
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; line-height: 1.6; }
+        header { background-color: #3a506b; color: #fff; padding: 20px; text-align: center; }
+        nav { display: flex; justify-content: center; background-color: #6c91c2; }
+        nav a { color: #fff; padding: 14px 20px; text-decoration: none; transition: background-color 0.3s; }
+        nav a:hover { background-color: #5a7fa9; }
+        .container { padding: 20px; max-width: 1000px; margin: auto; }
+        footer { background-color: #333; color: #fff; text-align: center; padding: 15px; margin-top: 30px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .feature-card { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; }
+        .feature-card h2 { color: #3a506b; margin-top: 0; }
+        .feature-card p { margin-bottom: 15px; }
+        .button-link { display: inline-block; padding: 10px 20px; background-color: #6c91c2; color: white; text-decoration: none; border-radius: 4px; transition: background-color 0.3s; }
+        .button-link:hover { background-color: #5a7fa9; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Life Sync Dashboard</h1>
+    </header>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('journal_page') }}">Journal</a>
+        <a href="{{ url_for('routine_page') }}">Routine Tracker</a>
+        <a href="{{ url_for('health_page') }}">Health & Therapy Spots</a>
+        <a href="{{ url_for('chatbot_page') }}">AI Chatbot</a>
+        <a href="{{ url_for('index') }}">Logout (Back to Login)</a>
+    </nav>
+    <div class="container">
+        <h2>Welcome back!</h2>
+        <p>Select a feature below to get started.</p>
+
+        <div class="dashboard-grid">
+            <div class="feature-card">
+                <h2>My Journal</h2>
+                <p>Reflect on your day and record your thoughts privately.</p>
+                <a href="{{ url_for('journal_page') }}" class="button-link">Open Journal</a>
+            </div>
+            <div class="feature-card">
+                <h2>Daily Routine Tracker</h2>
+                <p>Manage your daily tasks and view your progress.</p>
+                <a href="{{ url_for('routine_page') }}" class="button-link">Track Routine</a>
+            </div>
+            <div class="feature-card">
+                <h2>Health & Therapy Locator</h2>
+                <p>Find local parks, wellness centers, and clinics.</p>
+                <a href="{{ url_for('health_page') }}" class="button-link">Find Locations</a>
+            </div>
+            <div class="feature-card">
+                <h2>AI Chatbot (Prototype)</h2>
+                <p>A friendly ear to listen and provide support.</p>
+                <a href="{{ url_for('chatbot_page') }}" class="button-link">Start Chatting</a>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; <script>document.write(new Date().getFullYear())</script> Life Sync. All rights reserved.</p>
+    </footer>
+</body>
+</html>
