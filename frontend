@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Sync - Mental Health App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: #000;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #000;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #996666;
+        }
+        nav a {
+            color: #fff;
+            padding: 14px 20px;
+            text-decoration: none;
+        }
+        nav a:hover {
+            background-color: #996666;
+        }
+        .container {
+            padding: 20px;
+        }
+        .login, .signup, .forgot {
+            max-width: 300px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #000;
+        }
+        input[type="text"], input[type="password"], input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #996666;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #000;
+        }
+        .switch-link {
+            text-align: center;
+            margin: 10px 0;
+            color: #000;
+            cursor: pointer;
+        }
+        footer {
+            background-color: #000;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+    <script>
+        function showSection(section) {
+            document.querySelectorAll('.form-section').forEach(el => el.style.display = 'none');
+            document.getElementById(section).style.display = 'block';
+        }
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'user' && password === 'pass') {
+                alert('Login successful!');
+                window.location.href = 'hehe.html';
+            } else
+           {
+                alert('Invalid username or password.');
+            }
+        }
+        function handleSignup(event) {
+            event.preventDefault();
+            alert('Signup successful!');
+            window.location.href = 'hehe.html';
+        }
+        function handleForgotPassword(event) {
+            event.preventDefault();
+            alert('Password recovery functionality');
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Life Sync - Your Mental Health Companion</h1>
+    </header>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Features</a>
+        <a href="#">Login</a>
+        <a href="#">Contact</a>
+    </nav>
+    <div class="container">
+        <div id="login" class="form-section login">
+            <h2>Login to Life Sync</h2>
+            <form onsubmit="handleLogin(event)">
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
+                <button type="submit">Login</button>
+                </form>
+            <div class="switch-link" onclick="showSection('signup')" style="color: black;">Create an account</div>
+            <div class="switch-link" onclick="showSection('forgot')" style="color: black;">Forgot password?</div>
+        </div>
+        <div id="signup" class="form-section signup" style="display: none;">
+            <h2>Sign Up</h2>
+            <form onsubmit="handleSignup(event)">
+                <input type="text" placeholder="Username">
+                <input type="email" placeholder="Email">
+                <input type="password" placeholder="Password">
+                <button type="submit">Sign Up</button>
+            </form>
+            <div class="switch-link" onclick="showSection('login')">Already have an account? Login</div>
+        </div>
+        <div id="forgot" class="form-section forgot" style="display: none;">
+            <h2>Forgot Password</h2>
+            <form onsubmit="handleForgotPassword(event)">
+                <input type="email" placeholder="Enter your registered email">
+                <button type="submit">Reset Password</button>
+            </form>
+            <div class="switch-link" onclick="showSection('login')">Back to login</div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2025 Life Sync. All rights reserved.</p>
+    </footer>
+</body>
+</html>
