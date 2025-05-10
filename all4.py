@@ -63,10 +63,10 @@ class LifeSyncApp:
         print("Would you like to schedule an online therapy session? (not implemented)")
         input("Press Enter to continue...")
 
-            def ai_chatbot(self):
+    def ai_chatbot(self):
         print("\n🤖 AI Chatbot (Prototype)")
         print("Talk to me. Type 'bye' to exit.\n")
-       general_responses = [
+        general_responses = [
         "I'm here for you. Want to talk more about it?",
         "That sounds tough. Would you like to share more?",
         "I'm listening. Go on...",
@@ -74,7 +74,7 @@ class LifeSyncApp:
         "Let it out — what’s on your mind?"
     ]
 
-    mood_responses = {
+        mood_responses = {
         "sad": "I'm sorry you're feeling that way. Sometimes journaling helps you reflect and feel lighter.",
         "anxious": "That’s okay. Take a deep breath. Would you like a grounding tip?",
         "stress": "Stress can be overwhelming. Try closing your eyes and taking 3 deep breaths.",
@@ -82,7 +82,7 @@ class LifeSyncApp:
         "motivate": "Remember, progress is progress — even small steps count!"
     }
 
-    while True:
+        while True:
         msg = input("You: ").strip().lower()
         if msg == "bye":
             print("Chatbot: I'm always here if you need to talk. 👋")
