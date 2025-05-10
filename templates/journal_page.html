@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Journal - Life Sync</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> <style>
+        /* Basic styles - copy from index.html or use style.css */
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; line-height: 1.6; }
+        header { background-color: #3a506b; color: #fff; padding: 20px; text-align: center; }
+        nav { display: flex; justify-content: center; background-color: #6c91c2; }
+        nav a { color: #fff; padding: 14px 20px; text-decoration: none; }
+        nav a:hover { background-color: #5a7fa9; }
+        .container { padding: 20px; max-width: 800px; margin: auto; }
+        footer { background-color: #333; color: #fff; text-align: center; padding: 15px; margin-top: 30px; }
+        .form-section { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        textarea { width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; min-height: 150px; }
+        button { padding: 10px 15px; background-color: #6c91c2; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #5a7fa9; }
+        .journal-entry { background-color: #fff; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .journal-entry h3 { margin-top: 0; color: #3a506b; }
+        .journal-entry pre { white-space: pre-wrap; word-wrap: break-word; font-family: inherit; font-size: inherit; }
+        .alert { padding: 10px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px; margin-bottom: 15px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    </style>
+</head>
+<body>
+    <header><h1>My Private Journal</h1></header>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('journal_page') }}">Journal</a>
+        <a href="{{ url_for('routine_page') }}">Routine Tracker</a>
+        <a href="{{ url_for('health_page') }}">Health & Therapy Spots</a>
+        <a href="{{ url_for('chatbot_page') }}">AI Chatbot</a>
+    </nav>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="form-section">
+            <h2>Write a New Entry for {{ today_date }}</h2>
+            <form method="POST" action="{{ url_for('journal_page') }}">
+                <textarea name="entry_text" placeholder="Start writing your thoughts here..." required></textarea>
+                <button type="submit">Save Entry</button>
+            </form>
+        </div>
+
+        <h2>Past Entries</h2>
+        {% if entries %}
+            {% for entry in entries %}
+            <div class="journal-entry">
+                <h3>📅 Entry for: {{ entry.date }}</h3>
+                <pre>{{ entry.content }}</pre>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No journal entries yet. Write your first one above!</p>
+        {% endif %}
+    </div>
+    <footer><p>&copy; <script>document.write(new Date().getFullYear())</script> Life Sync</p></footer>
+</body>
+</html>
