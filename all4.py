@@ -97,28 +97,28 @@ class LifeSyncApp:
 
             if not found:
                 print("Chatbot:", random.choice(general_responses))
-        def menu(self):
-            while True:
-                print(f"\n LifeSync Menu for {self.username}")
-                print("1. Write in Journal")
-                print("2. Track Daily Routine")
-                print("3. Health & Therapy")
-                print("4. Talk to AI Chatbot")
-                print("5. Exit")
-                choice = input("Select an option: ")
+    def menu(self):
+        while True:
+            print(f"\n LifeSync Menu for {self.username}")
+            print("1. Write in Journal")
+            print("2. Track Daily Routine")
+            print("3. Health & Therapy")
+            print("4. Talk to AI Chatbot")
+            print("5. Exit")
+            choice = input("Select an option: ")
 
-            if choice == "1":
-                self.write_journal()
-            elif choice == "2":                self.track_routine()
-            elif choice == "3":
-                self.health_and_therapy()
-            elif choice == "4":
-                self.ai_chatbot()
-            elif choice == "5":
-                print("Goodbye! Stay well.")
-                break
-            else:
-                print("Invalid choice.")
+        if choice == "1":
+            self.write_journal()
+        elif choice == "2":                self.track_routine()
+        elif choice == "3":
+            self.health_and_therapy()
+        elif choice == "4":
+            self.ai_chatbot()
+        elif choice == "5":
+            print("Goodbye! Stay well.")
+            break
+        else:
+            print("Invalid choice.")
 
 if __name__ == "__main__":
     print("Welcome to LifeSync")
