@@ -1,303 +1,269 @@
+# dailytracker_logic.py
 import datetime
 import calendar
 from collections import defaultdict
+import json
+import os
+
+ROUTINES_FILE = "routines_data.json"
 
 class RoutineItem:
-    """
-    Represents a single routine item.
-
-    Attributes:
-        task (str): The description of the task.
-        completed (bool): A flag indicating whether the task is completed.
-        time (str, optional): The time of the task (e.g., "9:00 AM").
-    """
+    """Represents a single routine item."""
     def __init__(self, task, completed=False, time=None):
-        """
-        Initializes a RoutineItem object.
-
-        Args:
-            task (str): The description of the task.
-            completed (bool, optional): Defaults to False.
-            time (str, optional): Defaults to None.
-        """
         if not isinstance(task, str):
             raise TypeError("Task must be a string.")
         if not isinstance(completed, bool):
             raise TypeError("Completed must be a boolean.")
-        if time is not None and not isinstance(time, str):
-            raise TypeError("Time must be a string.")
+        if time is not None and not isinstance(time, str): # Allow empty string for time
+            raise TypeError("Time must be a string or None.")
         self.task = task
         self.completed = completed
-        self.time = time
+        self.time = time if time else "" # Store empty string if None
 
     def __str__(self):
-        """
-        Returns a string representation of the RoutineItem.
-        """
-        return f"{self.task} ({'Completed' if self.completed else 'Not Completed'})"
+        time_str = f" (Time: {self.time})" if self.time else ""
+        return f"{self.task}{time_str} - {'Completed' if self.completed else 'Not Completed'}"
 
     def __repr__(self):
-        """
-        Official string representation for developers (useful for debugging).
-        """
         return f"RoutineItem(task='{self.task}', completed={self.completed}, time='{self.time}')"
+
+    def to_dict(self):
+        return {"task": self.task, "completed": self.completed, "time": self.time}
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(task=data['task'], completed=data['completed'], time=data.get('time'))
 
 
 class DailyRoutine:
-    """
-    Represents a daily routine.
-
-    Attributes:
-        date (datetime.date): The date of the routine.
-        items (list[RoutineItem]): A list of RoutineItem objects.
-    """
+    """Represents a daily routine."""
     def __init__(self, date):
-        """
-        Initializes a DailyRoutine object.
-
-        Args:
-            date (datetime.date): The date of the routine.
-        """
         if not isinstance(date, datetime.date):
-            raise TypeError("Date must be a datetime.date object.")
+            # Attempt to convert if string
+            if isinstance(date, str):
+                try:
+                    date = datetime.date.fromisoformat(date)
+                except ValueError:
+                    raise TypeError("Date must be a datetime.date object or valid ISO format string.")
+            else:
+                raise TypeError("Date must be a datetime.date object or valid ISO format string.")
         self.date = date
         self.items = []
 
     def add_item(self, item):
-        """
-        Adds a RoutineItem to the daily routine.
-
-        Args:
-            item (RoutineItem): The RoutineItem to add.
-        """
         if not isinstance(item, RoutineItem):
             raise TypeError("Item must be a RoutineItem object.")
         self.items.append(item)
 
-    def get_completion_percentage(self):
-        """
-        Calculates the completion percentage of the daily routine.
+    def mark_item_complete(self, task_name, completed_status=True):
+        for item in self.items:
+            if item.task == task_name:
+                item.completed = completed_status
+                return True
+        return False # Item not found
 
-        Returns:
-            float: The completion percentage (0-100).
-        """
+    def get_completion_percentage(self):
         if not self.items:
-            return 100.0  # Return 100% for an empty routine
+            return 0.0 # Changed to 0.0 for no items, 100% felt misleading
         completed_items = sum(item.completed for item in self.items)
         return (completed_items / len(self.items)) * 100
 
     def __str__(self):
-        """
-        Returns a string representation of the DailyRoutine.
-        """
         return f"Daily Routine for {self.date}: {len(self.items)} items, {self.get_completion_percentage():.2f}% completed"
 
     def __repr__(self):
-        """
-        Official string representation.
-        """
         return f"DailyRoutine(date={self.date}, items={self.items})"
 
     def to_dict(self):
-        """
-        Convert the DailyRoutine object to a dictionary.  Useful for JSON serialization.
-        """
         return {
             "date": self.date.isoformat(),
-            "items": [{"task": item.task, "completed": item.completed, "time": item.time} for item in self.items]
+            "items": [item.to_dict() for item in self.items]
         }
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Create a DailyRoutine object from a dictionary. Useful for JSON deserialization
-        """
         date_obj = datetime.date.fromisoformat(data['date'])
         routine = cls(date_obj)
         for item_data in data['items']:
-            routine.add_item(RoutineItem(task=item_data['task'], completed=item_data['completed'], time=item_data.get('time')))
+            routine.add_item(RoutineItem.from_dict(item_data))
         return routine
 
+
 class MonthlyReport:
-    """
-    Generates a monthly report of daily routines.
-
-    Attributes:
-        year (int): The year of the report.
-        month (int): The month of the report.
-        routines (dict[datetime.date, DailyRoutine]): A dictionary of daily routines,
-            where the key is the date and the value is the DailyRoutine object.
-    """
-    def __init__(self, year, month, routines):
-        """
-        Initializes a MonthlyReport object.
-
-        Args:
-            year (int): The year of the report.
-            month (int): The month of the report.
-            routines (dict[datetime.date, DailyRoutine]):
-        """
+    """Generates a monthly report of daily routines."""
+    def __init__(self, year, month, routines_dict): # routines_dict is {date_iso_str: DailyRoutine_obj}
         if not isinstance(year, int):
             raise TypeError("Year must be an integer.")
         if not isinstance(month, int):
             raise TypeError("Month must be an integer.")
-        if not isinstance(routines, dict) or not all(isinstance(k, datetime.date) and isinstance(v, DailyRoutine) for k, v in routines.items()):
-            raise TypeError("Routines must be a dictionary of date: DailyRoutine.")
+        if not isinstance(routines_dict, dict):
+            raise TypeError("Routines must be a dictionary.")
         self.year = year
         self.month = month
-        self.routines = routines
-        self.days_in_month = calendar.monthrange(year, month)[1] # Number of days in the month
+        # Filter routines for the given month and year
+        self.routines_for_month = {}
+        for date_str, routine_obj in routines_dict.items():
+            date_obj = datetime.date.fromisoformat(date_str)
+            if date_obj.year == year and date_obj.month == month:
+                self.routines_for_month[date_obj] = routine_obj
+        
+        self.days_in_month = calendar.monthrange(year, month)[1]
 
     def get_average_completion(self):
-        """
-        Calculates the average completion percentage for the month.
-
-        Returns:
-            float: The average completion percentage.
-        """
         total_completion = 0
-        valid_days = 0 # Count days with routines
+        valid_days = 0
         for day in range(1, self.days_in_month + 1):
             date = datetime.date(self.year, self.month, day)
-            if date in self.routines:
-                total_completion += self.routines[date].get_completion_percentage()
+            if date in self.routines_for_month:
+                total_completion += self.routines_for_month[date].get_completion_percentage()
                 valid_days += 1
-        return total_completion / valid_days if valid_days > 0 else 100.0
+        return total_completion / valid_days if valid_days > 0 else 0.0
 
     def get_completed_days(self):
-        """
-        Gets the number of days with 100% completion.
-
-        Returns:
-            int: The number of fully completed days.
-        """
         completed_days = 0
         for day in range(1, self.days_in_month + 1):
             date = datetime.date(self.year, self.month, day)
-            if date not in self.routines:
+            if date not in self.routines_for_month:
                 continue
-            if self.routines[date].get_completion_percentage() == 100:
+            if self.routines_for_month[date].get_completion_percentage() == 100 and self.routines_for_month[date].items: # Ensure 100% on non-empty list
                 completed_days += 1
         return completed_days
 
-    def get_report(self):
-        """
-        Generates a detailed monthly report.
-
-        Returns:
-            str: The formatted monthly report.
-        """
-        report = f"Monthly Report for {calendar.month_name[self.month]} {self.year}\n"
-        report += f"--------------------------------------------------------\n"
-        report += f"Average Completion: {self.get_average_completion():.2f}%\n"
-        report += f"Days with 100% Completion: {self.get_completed_days()} / {self.days_in_month}\n"
-        report += "\nDaily Routine Details:\n"
+    def get_report_data(self):
+        """Generates a detailed monthly report as a dictionary."""
+        daily_details = []
         for day in range(1, self.days_in_month + 1):
             date = datetime.date(self.year, self.month, day)
-            if date in self.routines:
-                report += f"\n  {date}:\n"
-                for item in self.routines[date].items:
-                    report += f"    - {item}\n"
+            if date in self.routines_for_month:
+                routine = self.routines_for_month[date]
+                daily_details.append({
+                    "date": date.isoformat(),
+                    "items": [str(item) for item in routine.items],
+                    "completion": f"{routine.get_completion_percentage():.2f}%"
+                })
             else:
-                report += f"\n  {date}: No routine recorded\n"
+                daily_details.append({
+                    "date": date.isoformat(),
+                    "items": ["No routine recorded"],
+                    "completion": "N/A"
+                })
+        
+        analysis, recommendations = self.get_analysis_and_recommendations_data()
 
-        report += "\nAnalysis and Recommendations:\n"
-        report += self.get_analysis_and_recommendations()
-        return report
+        return {
+            "month_year": f"{calendar.month_name[self.month]} {self.year}",
+            "average_completion": f"{self.get_average_completion():.2f}%",
+            "fully_completed_days": f"{self.get_completed_days()} / {len(self.routines_for_month)} (recorded days)", # Changed to recorded days
+            "total_days_in_month": self.days_in_month,
+            "daily_details": daily_details,
+            "analysis": analysis,
+            "recommendations": recommendations
+        }
 
-    def get_analysis_and_recommendations(self):
-        """
-        Analyzes the monthly routine data and provides recommendations.
-
-        This is where the core logic for health-related analysis and recommendations
-        would go.  This is a placeholder.
-        """
-        analysis = ""
-        recommendations = ""
+    def get_analysis_and_recommendations_data(self):
+        analysis_pts = []
+        recommendations_pts = []
         average_completion = self.get_average_completion()
         completed_days = self.get_completed_days()
 
+        if not self.routines_for_month: # No data for the month
+            analysis_pts.append("No routine data recorded for this month.")
+            recommendations_pts.append("Start tracking your daily routines to gain insights.")
+            return analysis_pts, recommendations_pts
+
         if average_completion < 70:
-            analysis += "Low average completion rate suggests inconsistency in following the routine.\n"
-            recommendations += "Try to schedule tasks at specific times and set reminders.  Break down larger tasks into smaller, more manageable steps.\n"
+            analysis_pts.append("Low average completion rate suggests inconsistency in following the routine.")
+            recommendations_pts.append("Try to schedule tasks at specific times and set reminders. Break down larger tasks into smaller, more manageable steps.")
         elif average_completion < 90:
-            analysis += "Good average completion rate, but there's room for improvement.\n"
-            recommendations += "Identify the reasons for incomplete tasks and find strategies to overcome them.  Consider adding some flexibility to your schedule.\n"
+            analysis_pts.append("Good average completion rate, but there's room for improvement.")
+            recommendations_pts.append("Identify the reasons for incomplete tasks and find strategies to overcome them. Consider adding some flexibility to your schedule.")
         else:
-            analysis += "Excellent average completion rate!  You are consistently following your routine.\n"
-            recommendations += "Keep up the good work!  Consider adding new healthy habits to your routine.\n"
+            analysis_pts.append("Excellent average completion rate! You are consistently following your routine.")
+            recommendations_pts.append("Keep up the good work! Consider adding new healthy habits to your routine.")
 
-        if completed_days < 15:
-            analysis += "Low number of days with 100% completion indicates that you often miss completing all tasks.\n"
-            recommendations += "Evaluate if your daily routine is realistic and sustainable.  Prioritize essential tasks and be flexible with less important ones.\n"
-        elif completed_days < 25:
-            analysis += "A fair number of days with 100% completion.\n"
-            recommendations += "Try to identify what helps you complete all tasks and do more of that.  Ensure you have enough time for each task.\n"
+        # Using number of days in month for completed days target
+        if completed_days < self.days_in_month * 0.5: # Less than half the month fully completed
+            analysis_pts.append("Low number of days with 100% completion indicates that you often miss completing all tasks.")
+            recommendations_pts.append("Evaluate if your daily routine is realistic and sustainable. Prioritize essential tasks and be flexible with less important ones.")
+        elif completed_days < self.days_in_month * 0.8: # Less than 80% of the month fully completed
+            analysis_pts.append("A fair number of days with 100% completion.")
+            recommendations_pts.append("Try to identify what helps you complete all tasks and do more of that. Ensure you have enough time for each task.")
         else:
-            analysis += "Great job on completing all tasks on most days!\n"
-            recommendations += "Maintain your discipline and consistency.  You may want to reflect on how your routine makes you feel.\n"
-
+            analysis_pts.append("Great job on completing all tasks on most days!")
+            recommendations_pts.append("Maintain your discipline and consistency. You may want to reflect on how your routine makes you feel.")
+        
         # Placeholder for specific health-related analysis (e.g., sleep, exercise)
-        #  Needs more data about the routine items.
-        analysis += "\n[Placeholder for specific health-related analysis]\n"
-        recommendations += "[Placeholder for specific health recommendations based on routine data]\n"
+        analysis_pts.append("[Placeholder for specific health-related analysis based on task names, e.g., tracking 'Exercise' or 'Sleep' tasks.]")
+        recommendations_pts.append("[Placeholder for specific health recommendations based on routine data.]")
 
-        return analysis + "\n" + recommendations
-    
-    def display_report(self):
-        """Prints the monthly report to the console."""
-        print(self.get_report())
+        return analysis_pts, recommendations_pts
 
-def main():
-    """
-    Main function to run the daily routine tracker and generate a monthly report.
-    """
-    routines = {}
-    year = 2024
-    month = 12
 
-    # Pre-populate some data for demonstration and testing.
-    #  Using datetime.date objects directly.
-    routine1_date = datetime.date(year, month, 1)
-    routine1 = DailyRoutine(routine1_date)
-    routine1.add_item(RoutineItem("Wake up", True, "7:00 AM"))
-    routine1.add_item(RoutineItem("Exercise", False, "8:00 AM"))
-    routine1.add_item(RoutineItem("Breakfast", True, "9:00 AM"))
-    routines[routine1_date] = routine1
+# --- Persistence Functions ---
+def load_routines():
+    """Loads routines from JSON file."""
+    if not os.path.exists(ROUTINES_FILE):
+        return {} # Return empty dict if file doesn't exist
+    try:
+        with open(ROUTINES_FILE, 'r') as f:
+            data = json.load(f)
+        routines = {}
+        for date_str, routine_data_list in data.items(): # Expecting {date_str: [item_dicts]}
+            # This needs to be fixed. Should be {date_str: routine_dict}
+            # For now, assuming the structure saved by save_routines is:
+            # { "date_iso_string": {"date": "date_iso_string", "items": [item_dicts]} }
+            if "date" in routine_data_list and "items" in routine_data_list:
+                 routines[date_str] = DailyRoutine.from_dict(routine_data_list)
+            else: # Try to adapt from an older format if necessary, or log an error
+                print(f"Warning: Skipping malformed routine data for date {date_str}")
+        return routines
+    except (json.JSONDecodeError, IOError, TypeError) as e:
+        print(f"Error loading routines: {e}. Starting with an empty routine set.")
+        return {}
 
-    routine2_date = datetime.date(year, month, 5)
-    routine2 = DailyRoutine(routine2_date)
-    routine2.add_item(RoutineItem("Work", True, "9:00 AM"))
-    routine2.add_item(RoutineItem("Lunch", True, "1:00 PM"))
-    routine2.add_item(RoutineItem("Work", True, "2:00 PM"))
-    routine2.add_item(RoutineItem("Dinner", False, "7:00 PM"))
-    routines[routine2_date] = routine2
-    
-    routine3_date = datetime.date(year, month, 6)
-    routine3 = DailyRoutine(routine3_date)
-    routine3.add_item(RoutineItem("Sleep", False, "10:00 PM"))
-    routines[routine3_date] = routine3
-    
-    routine4_date = datetime.date(year, month, 7)
-    routine4 = DailyRoutine(routine4_date)
-    routines[routine4_date] = routine4 #empty routine
-    
-    routine5_date = datetime.date(year, month, 31)
-    routine5 = DailyRoutine(routine5_date)
-    routine5.add_item(RoutineItem("Wake up", True, "7:00 AM"))
-    routine5.add_item(RoutineItem("Go for a run", True, "8:00 AM"))
-    routine5.add_item(RoutineItem("Have breakfast", True, "9:00 AM"))
-    routine5.add_item(RoutineItem("Work", True, "10:00 AM"))
-    routine5.add_item(RoutineItem("Lunch", True, "1:00 PM"))
-    routine5.add_item(RoutineItem("Work", True, "2:00 PM"))
-    routine5.add_item(RoutineItem("Dinner", True, "7:00 PM"))
-    routine5.add_item(RoutineItem("Relax", True, "8:00 PM"))
-    routine5.add_item(RoutineItem("Sleep", True, "10:00 PM"))
-    routines[routine5_date] = routine5
 
-    # Create and display the monthly report.
-    report = MonthlyReport(year, month, routines)
-    report.display_report()
+def save_routines(routines_dict): # routines_dict is {date_iso_str: DailyRoutine_obj}
+    """Saves routines to JSON file."""
+    serializable_routines = {date_str: routine.to_dict() for date_str, routine in routines_dict.items()}
+    with open(ROUTINES_FILE, 'w') as f:
+        json.dump(serializable_routines, f, indent=4)
 
+def get_or_create_routine(date_obj, routines_dict):
+    """Gets routine for a date, or creates a new one if not exists."""
+    date_str = date_obj.isoformat()
+    if date_str not in routines_dict:
+        routines_dict[date_str] = DailyRoutine(date_obj)
+    return routines_dict[date_str]
+
+# Example usage within this file (for testing)
 if __name__ == "__main__":
-    main()
+    # Test loading/saving
+    all_routines = load_routines()
+
+    # Get today's routine
+    today = datetime.date.today()
+    todays_routine = get_or_create_routine(today, all_routines)
+    
+    if not todays_routine.items: # Add items if new
+        todays_routine.add_item(RoutineItem("Wake up", time="7:00 AM"))
+        todays_routine.add_item(RoutineItem("Exercise", time="7:30 AM"))
+        todays_routine.add_item(RoutineItem("Breakfast", time="8:30 AM"))
+
+    # Mark an item
+    todays_routine.mark_item_complete("Wake up", True)
+    print(todays_routine)
+
+    # Save changes
+    save_routines(all_routines)
+
+    # Generate a report for the current month
+    report_generator = MonthlyReport(today.year, today.month, all_routines)
+    report_data = report_generator.get_report_data()
+    
+    print(f"\n--- Monthly Report for {report_data['month_year']} ---")
+    print(f"Average Completion: {report_data['average_completion']}")
+    print(f"Fully Completed Days: {report_data['fully_completed_days']} out of {report_data['total_days_in_month']} total days")
+    print("\nAnalysis:")
+    for pt in report_data['analysis']: print(f"- {pt}")
+    print("\nRecommendations:")
+    for pt in report_data['recommendations']: print(f"- {pt}")
