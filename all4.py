@@ -83,10 +83,10 @@ class LifeSyncApp:
     }
 
         while True:
-        msg = input("You: ").strip().lower()
-        if msg == "bye":
-            print("Chatbot: I'm always here if you need to talk. 👋")
-            break
+            msg = input("You: ").strip().lower()
+            if msg == "bye":
+                print("Chatbot: I'm always here if you need to talk. 👋")
+                break
 
         found = False
         for keyword in mood_responses:
@@ -95,17 +95,17 @@ class LifeSyncApp:
                 found = True
                 break
 
-        if not found:
-            print("Chatbot:", random.choice(general_responses))
-    def menu(self):
-        while True:
-            print(f"\n LifeSync Menu for {self.username}")
-            print("1. Write in Journal")
-            print("2. Track Daily Routine")
-            print("3. Health & Therapy")
-            print("4. Talk to AI Chatbot")
-            print("5. Exit")
-            choice = input("Select an option: ")
+            if not found:
+                print("Chatbot:", random.choice(general_responses))
+        def menu(self):
+            while True:
+                print(f"\n LifeSync Menu for {self.username}")
+                print("1. Write in Journal")
+                print("2. Track Daily Routine")
+                print("3. Health & Therapy")
+                print("4. Talk to AI Chatbot")
+                print("5. Exit")
+                choice = input("Select an option: ")
 
             if choice == "1":
                 self.write_journal()
