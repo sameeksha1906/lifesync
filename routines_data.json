@@ -1,0 +1,12 @@
+{
+    "2025-05-11": {
+        "date": "2025-05-11",
+        "items": [
+            {
+                "task": "wake up early",
+                "completed": false,
+                "time": "05:30"
+            }
+        ]
+    }
+}
