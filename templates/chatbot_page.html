@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Chatbot - Life Sync</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; line-height: 1.6; }
+        header { background-color: #3a506b; color: #fff; padding: 20px; text-align: center; }
+        nav { display: flex; justify-content: center; background-color: #6c91c2; }
+        nav a { color: #fff; padding: 14px 20px; text-decoration: none; }
+        nav a:hover { background-color: #5a7fa9; }
+        .container { padding: 20px; max-width: 700px; margin: auto; }
+        footer { background-color: #333; color: #fff; text-align: center; padding: 15px; margin-top: 30px; position: fixed; bottom: 0; width: 100%;}
+        .chat-container { background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); height: calc(100vh - 250px); display: flex; flex-direction: column; padding: 15px; }
+        .chat-messages { flex-grow: 1; overflow-y: auto; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 4px;}
+        .message { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 70%; clear: both;}
+        .user-message { background-color: #6c91c2; color: white; float: right; border-bottom-right-radius: 5px;}
+        .bot-message { background-color: #e0e0e0; color: #333; float: left; border-bottom-left-radius: 5px;}
+        .chat-input { display: flex; }
+        .chat-input input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px 0 0 4px; }
+        .chat-input button { padding: 10px 15px; background-color: #6c91c2; color: white; border: none; border-radius: 0 4px 4px 0; cursor: pointer; }
+        .chat-input button:hover { background-color: #5a7fa9; }
+    </style>
+</head>
+<body>
+    <header><h1>AI Chatbot (Prototype)</h1></header>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('journal_page') }}">Journal</a>
+        <a href="{{ url_for('routine_page') }}">Routine Tracker</a>
+        <a href="{{ url_for('health_page') }}">Health & Therapy Spots</a>
+        <a href="{{ url_for('chatbot_page') }}">AI Chatbot</a>
+    </nav>
+    <div class="container">
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">Hello! I'm a prototype chatbot. How can I assist you today?</div>
+                </div>
+            <form class="chat-input" id="chatForm">
+                <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+    <footer><p>&copy; <script>document.write(new Date().getFullYear())</script> Life Sync</p></footer>
+
+    <script>
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const chatMessages = document.getElementById('chatMessages');
+
+        // Store conversation history
+        let conversation = [
+            { role: "system", content: "You are a friendly and supportive chatbot prototype for a mental health app called Life Sync. Keep responses concise." },
+            { role: "assistant", content: "Hello! I'm a prototype chatbot. How can I assist you today?" }
+        ];
+
+        chatForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const messageText = userInput.value.trim();
+            if (messageText === '') return;
+
+            appendMessage(messageText, 'user-message');
+            conversation.push({ role: "user", content: messageText });
+            userInput.value = '';
+
+            // Simulate bot response (for prototype)
+            // In a real app, you'd send this to a backend with an AI model
+            setTimeout(() => {
+                let botResponse = "I'm still learning! Thanks for your message.";
+                if (messageText.toLowerCase().includes("hello") || messageText.toLowerCase().includes("hi")) {
+                    botResponse = "Hi there! How are you feeling today?";
+                } else if (messageText.toLowerCase().includes("sad") || messageText.toLowerCase().includes("anxious")) {
+                    botResponse = "I'm sorry to hear you're feeling that way. Remember, it's okay to not be okay. Talking about it can help.";
+                } else if (messageText.toLowerCase().includes("routine") || messageText.toLowerCase().includes("journal")) {
+                    botResponse = "Great! Keeping a routine or journal can be very beneficial for mental well-being. You can access those features from the navigation bar.";
+                } else if (messageText.toLowerCase().includes("thank you") || messageText.toLowerCase().includes("thanks")) {
+                    botResponse = "You're welcome! I'm here to help in any way I can (as a prototype!).";
+                }
+                appendMessage(botResponse, 'bot-message');
+                conversation.push({ role: "assistant", content: botResponse });
+            }, 1000);
+        });
+
+        function appendMessage(text, className) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', className);
+            messageDiv.textContent = text;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
+        }
+    </script>
+</body>
+</html>
